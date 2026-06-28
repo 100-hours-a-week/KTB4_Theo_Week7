@@ -1,0 +1,156 @@
+/* css/posts.css */
+
+.posts-main {
+  display: flex;
+  justify-content: center;
+  padding: 32px 20px 80px;
+}
+
+.posts-container {
+  width: 592px;
+  max-width: 100%;
+}
+
+.posts-greeting {
+  margin: 0 0 20px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.posts-greeting strong {
+  font-weight: 700;
+}
+
+.write-button-area {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.write-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 138px;
+  height: 39px;
+  border-radius: 16px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.write-button:hover {
+  background-color: var(--color-primary-active);
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.post-card {
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: var(--color-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.post-card-content {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.post-card-title-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+
+.post-card-title {
+  overflow: hidden;
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.post-edited-text {
+  flex-shrink: 0;
+  color: #666666;
+  font-size: 12px;
+}
+
+.post-card-information {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.post-count-area {
+  display: flex;
+  gap: 10px;
+}
+
+.post-created-at {
+  flex-shrink: 0;
+}
+
+.post-author-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+}
+
+.post-author-profile {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background-color: #d9d9d9;
+}
+
+.post-author-profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-author-nickname {
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .posts-container {
+    width: 100%;
+  }
+
+  .post-card-content {
+    padding: 16px;
+  }
+
+  .post-card-title {
+    font-size: 20px;
+  }
+
+  .post-card-information {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .post-author-area {
+    padding: 12px 16px;
+  }
+}

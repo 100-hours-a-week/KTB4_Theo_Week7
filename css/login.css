@@ -1,0 +1,7 @@
+/* css/login.css */
+
+.login-main {
+  display: flex;
+  justify-content: center;
+  padding-top: 190px;
+}

@@ -1,0 +1,137 @@
+/* css/make-post.css */
+
+.header-back-link {
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 280px);
+  transform: translateY(-50%);
+  color: var(--color-black);
+  font-size: 28px;
+  text-decoration: none;
+}
+
+.make-post-main {
+  display: flex;
+  justify-content: center;
+  padding: 32px 20px 100px;
+}
+
+.make-post-container {
+  width: 592px;
+  max-width: 100%;
+}
+
+.make-post-title {
+  margin: 0 0 48px;
+  text-align: center;
+  font-size: 24px;
+}
+
+.make-post-form-group {
+  margin-bottom: 22px;
+}
+
+.make-post-form-group label,
+.post-image-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.make-post-form-group input,
+.make-post-form-group textarea {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-top: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.make-post-form-group input {
+  height: 52px;
+}
+
+.make-post-form-group textarea {
+  height: 260px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.make-post-form-group input:focus,
+.make-post-form-group textarea:focus {
+  border-color: var(--color-primary-active);
+}
+
+.make-post-helper {
+  min-height: 18px;
+  margin: 5px 0 0;
+  color: var(--color-error);
+  font-size: 12px;
+}
+
+.post-image-upload-area {
+  margin-bottom: 20px;
+}
+
+.post-image-upload-area input[type="file"] {
+  max-width: 100%;
+  font-size: 13px;
+}
+
+.selected-image-names {
+  margin: 8px 0 0;
+  color: #555555;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.post-image-preview-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.post-image-preview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.make-post-submit-button {
+  display: block;
+  width: 360px;
+  max-width: 100%;
+  height: 42px;
+  margin: 0 auto;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--color-primary-active);
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+.make-post-submit-button:disabled {
+  background-color: var(--color-primary);
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .header-back-link {
+    left: 20px;
+  }
+
+  .make-post-title {
+    margin-bottom: 32px;
+  }
+
+  .post-image-preview-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

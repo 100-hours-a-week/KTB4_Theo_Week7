@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>게시글 수정</title>
+
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/edit-post.css" />
+  </head>
+
+  <body>
+    <div class="page">
+      <header class="header edit-post-header">
+        <a class="header-back-link" id="back-link" href="./posts.html" aria-label="게시글로 돌아가기">&lt;</a>
+        <h1>아무 말 대잔치</h1>
+
+        <div class="profile-menu-container" id="profile-menu-container">
+          <button
+            type="button"
+            class="profile-button"
+            id="profile-button"
+            aria-label="회원 메뉴 열기"
+            aria-expanded="false"
+            aria-controls="profile-menu"
+          >
+            <img class="profile-image" id="profile-image" alt="내 프로필 사진" />
+          </button>
+
+          <nav class="profile-menu" id="profile-menu" aria-label="회원 메뉴" hidden>
+            <a class="profile-menu-item" href="./edit-profile.html">회원정보 수정</a>
+            <a class="profile-menu-item" href="./edit-password.html">비밀번호 수정</a>
+            <button
+              type="button"
+              class="profile-menu-item profile-logout-button"
+              id="logout-button"
+            >
+              로그아웃
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main edit-post-main">
+        <section class="edit-post-container" aria-labelledby="edit-post-title">
+          <h2 class="edit-post-title" id="edit-post-title">게시글 수정</h2>
+
+          <form id="edit-post-form" hidden>
+            <div class="edit-post-form-group">
+              <label for="post-title">제목*</label>
+              <input
+                type="text"
+                id="post-title"
+                name="title"
+                maxlength="26"
+                placeholder="제목을 입력해주세요. (최대 26글자)"
+              />
+              <p class="edit-post-helper" id="title-helper"></p>
+            </div>
+
+            <div class="edit-post-form-group">
+              <label for="post-content">내용*</label>
+              <textarea
+                id="post-content"
+                name="content"
+                placeholder="내용을 입력해주세요."
+              ></textarea>
+              <p class="edit-post-helper" id="content-helper"></p>
+            </div>
+
+            <section class="existing-image-area" id="existing-image-area" hidden>
+              <h3>기존 이미지</h3>
+              <div class="existing-image-list" id="existing-image-list"></div>
+            </section>
+
+            <div class="post-image-upload-area">
+              <label class="post-image-label" for="post-images">이미지</label>
+              <input
+                type="file"
+                id="post-images"
+                name="postImages"
+                accept="image/*"
+                multiple
+              />
+              <p class="selected-image-name" id="selected-image-name">
+                새 이미지를 선택하지 않으면 기존 이미지가 유지됩니다.
+              </p>
+              <div class="new-image-preview" id="new-image-preview"></div>
+            </div>
+
+            <button
+              type="submit"
+              class="edit-post-submit-button"
+              id="edit-post-submit-button"
+              disabled
+            >
+              수정하기
+            </button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/profile-menu.js"></script>
+    <script src="../js/edit-post.js"></script>
+  </body>
+</html>

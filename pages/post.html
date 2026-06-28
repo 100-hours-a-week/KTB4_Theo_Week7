@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>게시글 상세</title>
+
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/post.css" />
+  </head>
+
+  <body>
+    <div class="page">
+      <header class="header post-header">
+        <a class="header-back-link" href="./posts.html" aria-label="게시글 목록으로 돌아가기">&lt;</a>
+        <h1>아무 말 대잔치</h1>
+
+        <div class="profile-menu-container" id="profile-menu-container">
+          <button
+            type="button"
+            class="profile-button"
+            id="profile-button"
+            aria-label="회원 메뉴 열기"
+            aria-expanded="false"
+            aria-controls="profile-menu"
+          >
+            <img class="profile-image" id="profile-image" alt="내 프로필 사진" />
+          </button>
+
+          <nav class="profile-menu" id="profile-menu" aria-label="회원 메뉴" hidden>
+            <a class="profile-menu-item" href="./edit-profile.html">회원정보 수정</a>
+            <a class="profile-menu-item" href="./edit-password.html">비밀번호 수정</a>
+            <button
+              type="button"
+              class="profile-menu-item profile-logout-button"
+              id="logout-button"
+            >
+              로그아웃
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main post-main">
+        <div class="post-detail-container">
+          <article class="post-detail" id="post-detail" hidden>
+            <header class="post-detail-header">
+              <h2 class="post-detail-title" id="post-title"></h2>
+
+              <div class="post-detail-meta-row">
+                <div class="post-author-information">
+                  <div class="post-detail-profile" id="post-author-profile"></div>
+                  <strong id="post-author-nickname"></strong>
+                  <time class="post-detail-date" id="post-created-at"></time>
+                  <span class="post-edited-label" id="post-edited-label" hidden>(수정됨)</span>
+                </div>
+
+                <div class="post-action-buttons">
+                  <a class="outline-action-button" id="post-edit-link" href="./edit-post.html">수정</a>
+                  <button type="button" class="outline-action-button" id="post-delete-button">삭제</button>
+                </div>
+              </div>
+            </header>
+
+            <section class="post-image-gallery" id="post-image-gallery" aria-label="게시글 이미지" hidden>
+              <button
+                type="button"
+                class="gallery-navigation gallery-previous"
+                id="gallery-previous-button"
+                aria-label="이전 이미지"
+              >
+                &lt;
+              </button>
+              <img class="post-gallery-image" id="post-gallery-image" alt="게시글 첨부 이미지" />
+              <button
+                type="button"
+                class="gallery-navigation gallery-next"
+                id="gallery-next-button"
+                aria-label="다음 이미지"
+              >
+                &gt;
+              </button>
+              <p class="gallery-indicator" id="gallery-indicator"></p>
+            </section>
+
+            <p class="post-detail-content" id="post-content"></p>
+
+            <section class="post-statistics" aria-label="게시글 통계">
+              <button type="button" class="statistic-box like-statistic" id="like-button">
+                <strong id="post-like-count">0</strong>
+                <span>좋아요수</span>
+              </button>
+              <div class="statistic-box">
+                <strong id="post-view-count">0</strong>
+                <span>조회수</span>
+              </div>
+              <div class="statistic-box">
+                <strong id="post-comment-count">0</strong>
+                <span>댓글</span>
+              </div>
+            </section>
+          </article>
+
+          <section class="comment-section" id="comment-section" hidden>
+            <form class="comment-form" id="comment-form">
+              <label class="visually-hidden" for="comment-content">댓글 작성</label>
+              <textarea
+                id="comment-content"
+                name="content"
+                maxlength="50"
+                placeholder="댓글을 남겨주세요!"
+              ></textarea>
+              <p class="comment-helper" id="comment-helper"></p>
+              <div class="comment-submit-area">
+                <button type="submit" class="comment-submit-button" id="comment-submit-button" disabled>
+                  댓글 등록
+                </button>
+              </div>
+            </form>
+
+            <div class="comment-list" id="comment-list"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="delete-modal" hidden>
+      <section
+        class="confirm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-modal-title"
+        aria-describedby="delete-modal-description"
+      >
+        <h2 id="delete-modal-title"></h2>
+        <p id="delete-modal-description">삭제한 내용은 복구할 수 없습니다.</p>
+        <div class="confirm-modal-actions">
+          <button type="button" class="modal-button modal-cancel-button" id="delete-cancel-button">취소</button>
+          <button type="button" class="modal-button modal-confirm-button" id="delete-confirm-button">확인</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/profile-menu.js"></script>
+    <script src="../js/post.js"></script>
+  </body>
+</html>
