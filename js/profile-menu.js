@@ -1,6 +1,13 @@
 // js/profile-menu.js
 // 프로필 메뉴가 있는 모든 페이지에서 공통으로 사용하는 토글 및 로그아웃 기능
 
+import {
+  clearAccessToken,
+  DEFAULT_PROFILE_IMAGE_URL,
+  request,
+  resolveImageUrl,
+} from "./common.js";
+
 const profileMenuContainer = document.getElementById("profile-menu-container");
 
 if (profileMenuContainer) {
@@ -17,18 +24,15 @@ if (profileMenuContainer) {
         method: "GET",
       });
 
-      if (result?.message !== "get_user_success") {
-        throw new Error("현재 사용자 응답 형식이 올바르지 않습니다.");
-      }
-
       const profileImagePath = result.data?.profileImage;
 
       if (!profileImagePath) {
-        profileImage.removeAttribute("src");
+        setDefaultProfileImage();
         return;
       }
 
       profileImage.src = resolveImageUrl(profileImagePath);
+      profileImage.classList.remove("default-profile-image");
     } catch (error) {
       console.log(error);
 
@@ -36,6 +40,11 @@ if (profileMenuContainer) {
         location.href = "./login.html";
       }
     }
+  }
+
+  function setDefaultProfileImage() {
+    profileImage.src = DEFAULT_PROFILE_IMAGE_URL;
+    profileImage.classList.add("default-profile-image");
   }
 
   // 프로필 메뉴의 열림/닫힘 상태를 설정하는 함수 (토글 형식)
@@ -78,10 +87,13 @@ if (profileMenuContainer) {
     logoutButton.disabled = true;
 
     try {
-      await request("/users/logout", {
+      await request("/auth/logout", {
         method: "POST",
+        includeAccessToken: false,
+        retryOnUnauthorized: false,
       });
 
+      clearAccessToken();
       location.href = "./login.html";
     } catch (error) {
       console.log(error);
@@ -98,7 +110,7 @@ if (profileMenuContainer) {
   document.addEventListener("keydown", handleDocumentKeydown);
 
   profileImage.addEventListener("error", function () {
-    profileImage.removeAttribute("src");
+    setDefaultProfileImage();
   });
 
   readCurrentUserProfileImage();

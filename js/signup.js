@@ -1,5 +1,14 @@
 // 회원가입 페이지 js
 
+import { request } from "./common.js";
+import {
+  isValidEmail,
+  isValidPassword,
+  NICKNAME_MAX_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "./validation.js";
+
 // === 프로필 이미지 선택 및 미리보기 ===
 
 // 파일 선택 input 요소
@@ -205,7 +214,7 @@ function validatePassword() {
 
   if (!isValidPassword(password)) {
     passwordHelper.textContent =
-      "* 비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+      `* 비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상, ${PASSWORD_MAX_LENGTH}자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.`;
     return false;
   }
 
@@ -260,9 +269,9 @@ function validateNickname() {
     return false;
   }
 
-  if (nickname.length > 10) {
+  if (nickname.length > NICKNAME_MAX_LENGTH) {
     nicknameHelper.textContent =
-      "* 닉네임은 최대 10자까지 작성 가능합니다.";
+      `* 닉네임은 최대 ${NICKNAME_MAX_LENGTH}자까지 작성 가능합니다.`;
     return false;
   }
 
@@ -271,7 +280,7 @@ function validateNickname() {
 }
 
 function isValidNickname(nickname) {
-  return nickname && !nickname.includes(" ") && nickname.length <= 10;
+  return nickname && !nickname.includes(" ") && nickname.length <= NICKNAME_MAX_LENGTH;
 }
 
 // === 회원가입 버튼 활성화 ===
@@ -338,15 +347,15 @@ signupForm.addEventListener("submit", async function (event) {
   updateSignupButton();
 
   try {
-    const result = await request("/users/signup", {
+    await request("/users/signup", {
       method: "POST",
       body: JSON.stringify(requestBody),
+      includeAccessToken: false,
+      retryOnUnauthorized: false,
     });
 
-    if (result.message === "signup_success") {
-      alert("회원가입이 완료되었습니다.");
-      location.href = "login.html"; // 회원가입 성공 시 로그인 페이지로 리디렉션
-    }
+    alert("회원가입이 완료되었습니다.");
+    location.href = "login.html"; // 회원가입 성공 시 로그인 페이지로 리디렉션
   } catch (error) {
     console.log(error);
     handleSignupError(error);
@@ -393,13 +402,13 @@ function handleSignupBadRequest(message) {
 
   if (message === "invalid_password_format") {
     passwordHelper.textContent =
-      "* 비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+      `* 비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상, ${PASSWORD_MAX_LENGTH}자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.`;
     return;
   }
 
   if (message === "invalid_nickname_format") {
     nicknameHelper.textContent =
-      "* 닉네임은 띄어쓰기 없이 최대 10자까지 작성 가능합니다.";
+      `* 닉네임은 띄어쓰기 없이 최대 ${NICKNAME_MAX_LENGTH}자까지 작성 가능합니다.`;
     return;
   }
 

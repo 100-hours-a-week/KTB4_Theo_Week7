@@ -9,10 +9,15 @@
     <link rel="stylesheet" href="../css/posts.css" />
   </head>
 
-  <body>
+  <body class="posts-page">
     <div class="page">
       <header class="header posts-header">
-        <h1>아무 말 대잔치</h1>
+        <h1 class="posts-logo">
+          <a class="header-logo-link" href="./posts.html" aria-label="게시글 목록으로 이동">
+            <span aria-hidden="true">&lt;/&gt;</span>
+            코드 한입
+          </a>
+        </h1>
 
         <div class="profile-menu-container" id="profile-menu-container">
           <button
@@ -47,8 +52,8 @@
       <main class="main posts-main">
         <section class="posts-container" aria-labelledby="posts-greeting">
           <h2 class="posts-greeting" id="posts-greeting">
-            안녕하세요,<br />
-            아무 말 대잔치 <strong>게시판</strong>입니다.
+            전체 피드
+            <span>개발자들의 지식과 경험을 한입에</span>
           </h2>
 
           <div class="write-button-area">
@@ -57,11 +62,14 @@
 
           <!-- 조회된 게시글 카드는 추후 JavaScript에서 이 목록에 추가합니다. -->
           <div class="post-list" id="post-list" aria-live="polite"></div>
+          <div
+            class="post-list-sentinel"
+            id="post-list-sentinel"
+            aria-hidden="true"
+          ></div>
         </section>
       </main>
     </div>
-    <script src="../js/common.js"></script>
-    <script src="../js/profile-menu.js"></script>
-    <script src="../js/posts.js"></script>
+    <script type="module" src="../js/posts.js"></script>
   </body>
 </html>

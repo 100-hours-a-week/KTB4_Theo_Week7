@@ -1,5 +1,13 @@
 // 로그인 페이지 js
 
+import { request, saveAccessToken } from "./common.js";
+import {
+  isValidEmail,
+  isValidPassword,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "./validation.js";
+
 // === 이메일 입력 검증 ===
 
 // 이메일 입력
@@ -64,7 +72,7 @@ function validatePassword() {
 
   if (!isValidPassword(password)) {
     passwordHelper.textContent =
-      "* 비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+      `* 비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상, ${PASSWORD_MAX_LENGTH}자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.`;
     return false;
   }
 
@@ -123,14 +131,16 @@ loginForm.addEventListener("submit", async function (event) {
   updateLoginButton();
 
   try {
-    const result = await request("/users/login", {
+    const result = await request("/auth/login", {
       method: "POST",
       body: JSON.stringify(requestBody),
+      includeAccessToken: false,
+      retryOnUnauthorized: false,
     });
 
-    if (result.message === "login_success") {
-      location.href = "posts.html"; // 게시글 목록 조회 페이지로 이동
-    }
+    saveAccessToken(result.data?.accessToken);
+
+    location.href = "posts.html"; // 게시글 목록 조회 페이지로 이동
   } catch (error) {
     console.log(error);
     handleLoginError(error);

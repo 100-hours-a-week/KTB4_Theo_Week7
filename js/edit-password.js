@@ -1,5 +1,15 @@
 // 비밀번호 수정 페이지 js
 
+import "./profile-menu.js";
+import { request } from "./common.js";
+import {
+  isValidPassword,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "./validation.js";
+
+const EDIT_PASSWORD_TOAST_DURATION_MS = 2000;
+
 // === DOM 요소 ===
 
 const editPasswordForm = document.getElementById("edit-password-form");
@@ -29,7 +39,7 @@ function validatePassword() {
 
   if (!isValidPassword(password)) {
     passwordHelper.textContent =
-      "* 비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+      `* 비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상, ${PASSWORD_MAX_LENGTH}자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.`;
     return false;
   }
 
@@ -85,14 +95,10 @@ async function updatePassword() {
   updateEditPasswordSubmitButton();
 
   try {
-    const result = await request("/users/me/password", {
+    await request("/users/me/password", {
       method: "PATCH",
       body: JSON.stringify(requestBody),
     });
-
-    if (result?.message !== "password_update_success") {
-      throw new Error("비밀번호 수정 응답 형식이 올바르지 않습니다.");
-    }
 
     resetEditPasswordForm();
     showEditPasswordToast();
@@ -146,7 +152,7 @@ function handleUpdatePasswordError(error) {
 
   if (status === 400 && message === "invalid_password_format") {
     passwordHelper.textContent =
-      "* 비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+      `* 비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상, ${PASSWORD_MAX_LENGTH}자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.`;
     return;
   }
 
@@ -161,10 +167,7 @@ function handleUpdatePasswordError(error) {
     return;
   }
 
-  if (
-    status === 409 &&
-    (message === "same_password" || message === "same password")
-  ) {
+  if (status === 409 && message === "same_password"){
     passwordHelper.textContent = "* 기존 비밀번호와 다른 비밀번호를 입력해주세요.";
     return;
   }
@@ -188,7 +191,7 @@ function showEditPasswordToast() {
   editPasswordToast.hidden = false;
   toastTimer = setTimeout(function () {
     editPasswordToast.hidden = true;
-  }, 2000);
+  }, EDIT_PASSWORD_TOAST_DURATION_MS);
 }
 
 

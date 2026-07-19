@@ -1,12 +1,26 @@
 // 게시글 목록 조회 페이지 js
 
+import "./profile-menu.js";
+import {
+  DEFAULT_PROFILE_IMAGE_URL,
+  formatPostCount,
+  formatPostDate,
+  request,
+  resolveImageUrl,
+} from "./common.js";
+import { POST_TITLE_MAX_LENGTH } from "./validation.js";
+
 // === 게시글 목록 요소 및 페이지네이션 상태 ===
 
 // 서버에서 받은 게시글 카드를 추가할 영역
 const postList = document.getElementById("post-list");
+// 다음 페이지 조회 시점을 감지할 목록 하단 요소
+const postListSentinel = document.getElementById("post-list-sentinel");
 
 // 게시글은 한 번에 10개씩 조회
 const POST_PAGE_SIZE = 10;
+// 센티넬이 화면 아래쪽의 이 거리 안에 들어오면 다음 페이지를 미리 조회
+const POST_LIST_SENTINEL_MARGIN = 200;
 
 // 다음 요청에서 기준으로 사용할 마지막 게시글 ID
 // 최초 요청에는 lastPostId가 없으므로 null로 시작
@@ -15,8 +29,11 @@ let lastPostId = null;
 // 다음에 조회할 게시글이 있는지 나타내는 상태
 let hasNext = true;
 
-// 스크롤 이벤트가 여러 번 발생해도 요청이 중복되지 않도록 사용하는 상태
+// 센티넬 콜백이 반복되어도 요청이 중복되지 않도록 사용하는 상태
 let isPostListLoading = false;
+
+// 목록 하단 센티넬의 화면 진입 여부를 감지하는 관찰자
+let postListObserver = null;
 
 
 // === 게시글 목록 요청 URL 생성 ===
@@ -42,6 +59,7 @@ async function readPostList() {
 
   // 요청을 보내기 전에 로딩 상태로 변경
   isPostListLoading = true;
+  let shouldRefreshSentinel = false;
 
   try {
     const requestUrl = createPostListUrl();
@@ -49,11 +67,6 @@ async function readPostList() {
     const result = await request(requestUrl, {
       method: "GET",
     });
-
-    // 약속된 성공 응답이 아니라면 정상 데이터로 처리하지 않음
-    if (result?.message !== "post_list_read_success") {
-      throw new Error("게시글 목록 응답 형식이 올바르지 않습니다.");
-    }
 
     const posts = result.data.posts;
 
@@ -63,12 +76,20 @@ async function readPostList() {
     // 다음 요청에 필요한 페이지네이션 상태를 서버 응답으로 갱신
     hasNext = result.data.hasNext;
     lastPostId = result.data.lastPostId;
+
+    // 센티넬이 계속 보이는 짧은 목록도 다음 페이지를 확인할 수 있도록 관찰 갱신
+    shouldRefreshSentinel =
+      hasNext && Array.isArray(posts) && posts.length > 0;
   } catch (error) {
     console.log(error);
     handlePostListError(error);
   } finally {
     // 성공하거나 실패해도 다음 요청을 받을 수 있도록 상태 복구
     isPostListLoading = false;
+  }
+
+  if (shouldRefreshSentinel) {
+    refreshPostListSentinelObservation();
   }
 }
 
@@ -85,7 +106,11 @@ function renderPostList(posts) {
   const fragment = document.createDocumentFragment();
 
   // 조회된 게시글을 반복하면서 카드 요소를 생성하고 fragment에 추가
-  posts.forEach(function (post) { 
+  posts.forEach(function (post) {
+    if (post.blinded) {
+      return;
+    }
+
     const postCard = createPostCard(post);
     fragment.appendChild(postCard);
   });
@@ -117,18 +142,22 @@ function createPostCard(post) {
   if (post.edited) {
     const editedText = document.createElement("span");
     editedText.className = "post-edited-text";
-    editedText.textContent = "(수정됨)";
+    editedText.textContent = "수정됨";
     titleArea.appendChild(editedText);
   }
 
   const informationArea = document.createElement("div");
   informationArea.className = "post-card-information";
 
+  const likeCount = document.createElement("span");
+  likeCount.className = "post-like-count";
+  likeCount.textContent = formatPostCount(post.likeCount);
+
+  const metaRow = document.createElement("div");
+  metaRow.className = "post-card-meta-row";
+
   const countArea = document.createElement("div");
   countArea.className = "post-count-area";
-
-  const likeCount = document.createElement("span");
-  likeCount.textContent = `좋아요 ${formatPostCount(post.likeCount)}`;
 
   const commentCount = document.createElement("span");
   commentCount.textContent = `댓글 ${formatPostCount(post.commentCount)}`;
@@ -136,14 +165,15 @@ function createPostCard(post) {
   const viewCount = document.createElement("span");
   viewCount.textContent = `조회수 ${formatPostCount(post.viewCount)}`;
 
-  countArea.append(likeCount, commentCount, viewCount);
+  countArea.append(commentCount, viewCount);
 
   const createdAt = document.createElement("time");
   createdAt.className = "post-created-at";
   createdAt.dateTime = post.createdAt;
-  createdAt.textContent = formatPostDate(post.createdAt);
+  createdAt.textContent = formatPostListDate(post.createdAt);
 
-  informationArea.append(countArea, createdAt);
+  metaRow.append(countArea, createdAt);
+  informationArea.append(likeCount, metaRow);
   postContent.append(titleArea, informationArea);
 
   const authorArea = document.createElement("div");
@@ -152,16 +182,21 @@ function createPostCard(post) {
   const profileArea = document.createElement("div");
   profileArea.className = "post-author-profile";
 
-  // 프로필 이미지 URL이 있을 때만 img 요소 생성
+  const profileImage = document.createElement("img");
+  profileImage.alt = "";
+
   if (post.profileImage) {
-    const profileImage = document.createElement("img");
     profileImage.src = resolveImageUrl(post.profileImage);
-    profileImage.alt = "";
-    profileImage.addEventListener("error", function () {
-      profileImage.remove();
-    });
-    profileArea.appendChild(profileImage);
+  } else {
+    profileImage.src = DEFAULT_PROFILE_IMAGE_URL;
+    profileImage.classList.add("default-profile-image");
   }
+
+  profileImage.addEventListener("error", function () {
+    profileImage.src = DEFAULT_PROFILE_IMAGE_URL;
+    profileImage.classList.add("default-profile-image");
+  });
+  profileArea.appendChild(profileImage);
 
   const nickname = document.createElement("strong");
   nickname.className = "post-author-nickname";
@@ -176,27 +211,6 @@ function createPostCard(post) {
 
 // === 게시글 데이터 표시 형식 변환 ===
 
-// 게시글 작성일시를 "YYYY-MM-DD HH:mm:ss" 형식으로 변환
-function formatPostDate(createdAt) { 
-  if (!createdAt) {
-    return "";
-  }
-
-  // 2026-06-27T11:56:30.532605 형식에서 소수점 이하 제거
-  return createdAt.replace("T", " ").split(".")[0];
-}
-
-// 게시글의 좋아요, 댓글, 조회수 숫자를 k 단위로 변환
-function formatPostCount(count) {
-  const safeCount = Number(count) || 0; //
-
-  if (safeCount >= 1000) {
-    return `${Math.floor(safeCount / 1000)}k`;
-  }
-
-  return String(safeCount);
-}
-
 function getPostTitle(post) {
   if (post.blinded) {
     return "숨김 처리된 게시글입니다.";
@@ -204,8 +218,10 @@ function getPostTitle(post) {
 
   const title = post.title || "";
 
-  // 명세에 따라 26자를 초과하는 부분은 표시하지 않음
-  return title.length > 26 ? title.slice(0, 26) : title;
+  // 명세에 따라 제목 최대 길이를 초과하는 부분은 표시하지 않음
+  return title.length > POST_TITLE_MAX_LENGTH
+    ? title.slice(0, POST_TITLE_MAX_LENGTH)
+    : title;
 }
 
 function getPostNickname(post) {
@@ -214,6 +230,16 @@ function getPostNickname(post) {
   }
 
   return post.nickname || "";
+}
+
+function formatPostListDate(createdAt) {
+  const formattedDate = formatPostDate(createdAt);
+
+  if (!formattedDate) {
+    return "";
+  }
+
+  return formattedDate.split(" ")[0].replaceAll("-", ".");
 }
 
 
@@ -237,23 +263,35 @@ function handlePostListClick(event) {
 
 // === 무한 스크롤 ===
 
-function isNearPageBottom() {
-  const currentScrollBottom = window.scrollY + window.innerHeight;
-  const pageHeight = document.documentElement.scrollHeight;
-  const scrollThreshold = 200;
+function handlePostListIntersection(entries) {
+  const isSentinelVisible = entries.some(function (entry) {
+    return entry.isIntersecting;
+  });
 
-  // 페이지 끝에서 200px 이내까지 내려왔는지 확인
-  return currentScrollBottom >= pageHeight - scrollThreshold;
-}
-
-function handlePostListScroll() {
-  if (isPostListLoading || !hasNext) {
+  if (!isSentinelVisible || isPostListLoading || !hasNext) {
     return;
   }
 
-  if (isNearPageBottom()) {
-    readPostList();
+  readPostList();
+}
+
+function refreshPostListSentinelObservation() {
+  if (!postListObserver) {
+    return;
   }
+
+  postListObserver.unobserve(postListSentinel);
+  postListObserver.observe(postListSentinel);
+}
+
+function observePostListSentinel() {
+  postListObserver = new IntersectionObserver(handlePostListIntersection, {
+    root: null,
+    rootMargin: `0px 0px ${POST_LIST_SENTINEL_MARGIN}px 0px`,
+    threshold: 0,
+  });
+
+  postListObserver.observe(postListSentinel);
 }
 
 
@@ -286,9 +324,6 @@ function handlePostListError(error) {
 // === 이벤트 등록 ===
 
 function bindPostListEvents() {
-  // 추가 조회를 위한 스크롤 이벤트
-  window.addEventListener("scroll", handlePostListScroll);
-
   // 동적으로 생성되는 모든 게시글 카드의 클릭을 목록에서 한 번에 처리
   postList.addEventListener("click", handlePostListClick);
 }
@@ -298,6 +333,7 @@ function bindPostListEvents() {
 
 function initPostListPage() {
   bindPostListEvents(); // 이벤트 등록
+  observePostListSentinel(); // 다음 페이지 조회 시점 감지
   readPostList(); // 최초 게시글 목록 조회
 }
 

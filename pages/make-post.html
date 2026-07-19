@@ -9,11 +9,18 @@
     <link rel="stylesheet" href="../css/make-post.css" />
   </head>
 
-  <body>
+  <body class="make-post-page">
     <div class="page">
       <header class="header make-post-header">
-        <a class="header-back-link" href="./posts.html" aria-label="게시글 목록으로 돌아가기">&lt;</a>
-        <h1>아무 말 대잔치</h1>
+        <a class="header-back-link" href="./posts.html" aria-label="게시글 목록으로 돌아가기">
+          <img src="../assets/images/back-button.png" alt="" aria-hidden="true" />
+        </a>
+        <h1 class="make-post-logo">
+          <a class="header-logo-link" href="./posts.html" aria-label="게시글 목록으로 이동">
+            <span aria-hidden="true">&lt;/&gt;</span>
+            코드 한입
+          </a>
+        </h1>
 
         <div class="profile-menu-container" id="profile-menu-container">
           <button
@@ -43,27 +50,29 @@
 
       <main class="main make-post-main">
         <section class="make-post-container" aria-labelledby="make-post-title">
-          <h2 class="make-post-title" id="make-post-title">게시글 작성</h2>
+          <div class="make-post-heading">
+            <h2 class="make-post-title" id="make-post-title">게시글 작성</h2>
+          </div>
 
-          <form id="make-post-form">
-            <div class="make-post-form-group">
-              <label for="post-title">제목*</label>
+          <form class="make-post-editor" id="make-post-form">
+            <div class="make-post-title-field">
+              <label class="sr-only" for="post-title">제목*</label>
               <input
                 type="text"
                 id="post-title"
                 name="title"
                 maxlength="26"
-                placeholder="제목을 입력해주세요. (최대 26글자)"
+                placeholder="오늘의 개발 한입을 적어주세요"
               />
               <p class="make-post-helper" id="title-helper"></p>
             </div>
 
-            <div class="make-post-form-group">
-              <label for="post-content">내용*</label>
+            <div class="make-post-content-field">
+              <label class="sr-only" for="post-content">내용*</label>
               <textarea
                 id="post-content"
                 name="content"
-                placeholder="내용을 입력해주세요."
+                placeholder="배운 점, 막혔던 부분, 해결한 과정을 자유롭게 남겨보세요."
               ></textarea>
               <p class="make-post-helper" id="content-helper"></p>
             </div>
@@ -81,21 +90,21 @@
               <div class="post-image-preview-list" id="post-image-preview-list"></div>
             </div>
 
-            <button
-              type="submit"
-              class="make-post-submit-button"
-              id="make-post-submit-button"
-              disabled
-            >
-              완료
-            </button>
+            <div class="make-post-actions">
+              <button
+                type="submit"
+                class="make-post-submit-button"
+                id="make-post-submit-button"
+                disabled
+              >
+                완료
+              </button>
+            </div>
           </form>
         </section>
       </main>
     </div>
 
-    <script src="../js/common.js"></script>
-    <script src="../js/profile-menu.js"></script>
-    <script src="../js/make-post.js"></script>
+    <script type="module" src="../js/make-post.js"></script>
   </body>
 </html>

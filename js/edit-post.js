@@ -1,5 +1,14 @@
 // 게시글 수정 페이지 js
 
+import "./profile-menu.js";
+import { getPostIdFromUrl, request, resolveImageUrl } from "./common.js";
+import {
+  isPostFormValid,
+  POST_TITLE_MAX_LENGTH,
+  validatePostContentInput,
+  validatePostTitleInput,
+} from "./validation.js";
+
 // === DOM 요소 ===
 
 const editPostForm = document.getElementById("edit-post-form");
@@ -25,21 +34,6 @@ let newImagePreviewUrls = [];
 let isPostLoading = false;
 let isPostUpdating = false;
 
-
-// === URL의 게시글 ID 확인 ===
-
-function getPostIdFromUrl() {
-  const searchParams = new URLSearchParams(location.search);
-  const postId = Number(searchParams.get("postId"));
-
-  if (!Number.isInteger(postId) || postId <= 0) {
-    return null;
-  }
-
-  return postId;
-}
-
-
 // === 기존 게시글 조회 ===
 
 async function readPostForEdit() {
@@ -53,10 +47,6 @@ async function readPostForEdit() {
     const result = await request(`/posts/${currentPostId}`, {
       method: "GET",
     });
-
-    if (result?.message !== "post_read_success") {
-      throw new Error("게시글 상세 응답 형식이 올바르지 않습니다.");
-    }
 
     fillEditPostForm(result.data);
   } catch (error) {
@@ -138,43 +128,8 @@ function clearNewImagePreview() {
   newImagePreview.replaceChildren();
 }
 
-
-// === 입력값 검증 ===
-
-function validatePostTitle() {
-  const title = titleInput.value.trim();
-
-  if (!title) {
-    titleHelper.textContent = "* 제목을 입력해주세요.";
-    return false;
-  }
-
-  if (title.length > 26) {
-    titleHelper.textContent = "* 제목은 최대 26자까지 작성 가능합니다.";
-    return false;
-  }
-
-  titleHelper.textContent = "";
-  return true;
-}
-
-function validatePostContent() {
-  const content = contentInput.value.trim();
-
-  if (!content) {
-    contentHelper.textContent = "* 내용을 입력해주세요.";
-    return false;
-  }
-
-  contentHelper.textContent = "";
-  return true;
-}
-
 function isEditPostFormValid() {
-  const title = titleInput.value.trim();
-  const content = contentInput.value.trim();
-
-  return title.length > 0 && title.length <= 26 && content.length > 0;
+  return isPostFormValid(titleInput, contentInput);
 }
 
 function updateEditPostSubmitButton() {
@@ -205,14 +160,10 @@ async function updatePost() {
   updateEditPostSubmitButton();
 
   try {
-    const result = await request(`/posts/${currentPostId}`, {
+    await request(`/posts/${currentPostId}`, {
       method: "PATCH",
       body: JSON.stringify(requestBody),
     });
-
-    if (result?.message !== "post_update_success") {
-      throw new Error("게시글 수정 응답 형식이 올바르지 않습니다.");
-    }
 
     location.href = `./post.html?postId=${currentPostId}`;
   } catch (error) {
@@ -231,7 +182,9 @@ function handleEditPostSubmit(event) {
     return;
   }
 
-  const isValid = validatePostTitle() && validatePostContent();
+  const isValid =
+    validatePostTitleInput(titleInput, titleHelper) &&
+    validatePostContentInput(contentInput, contentHelper);
   updateEditPostSubmitButton();
 
   if (!isValid) {
@@ -285,7 +238,7 @@ function handleUpdatePostError(error) {
   }
 
   if (status === 400 && message === "invalid_post_title") {
-    titleHelper.textContent = "* 제목은 최대 26자까지 작성 가능합니다.";
+    titleHelper.textContent = `* 제목은 최대 ${POST_TITLE_MAX_LENGTH}자까지 작성 가능합니다.`;
     return;
   }
 
@@ -325,9 +278,13 @@ function clearEditPostErrorMessages() {
 
 function bindEditPostEvents() {
   titleInput.addEventListener("input", updateEditPostSubmitButton);
-  titleInput.addEventListener("blur", validatePostTitle);
+  titleInput.addEventListener("blur", function () {
+    validatePostTitleInput(titleInput, titleHelper);
+  });
   contentInput.addEventListener("input", updateEditPostSubmitButton);
-  contentInput.addEventListener("blur", validatePostContent);
+  contentInput.addEventListener("blur", function () {
+    validatePostContentInput(contentInput, contentHelper);
+  });
   postImagesInput.addEventListener("change", handlePostImageChange);
   editPostForm.addEventListener("submit", handleEditPostSubmit);
   window.addEventListener("beforeunload", clearNewImagePreview);

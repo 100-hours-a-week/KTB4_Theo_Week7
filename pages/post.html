@@ -9,11 +9,18 @@
     <link rel="stylesheet" href="../css/post.css" />
   </head>
 
-  <body>
+  <body class="post-page">
     <div class="page">
       <header class="header post-header">
-        <a class="header-back-link" href="./posts.html" aria-label="게시글 목록으로 돌아가기">&lt;</a>
-        <h1>아무 말 대잔치</h1>
+        <a class="header-back-link" href="./posts.html" aria-label="게시글 목록으로 돌아가기">
+          <img src="../assets/images/back-button.png" alt="" aria-hidden="true" />
+        </a>
+        <h1 class="post-logo">
+          <a class="header-logo-link" href="./posts.html" aria-label="게시글 목록으로 이동">
+            <span aria-hidden="true">&lt;/&gt;</span>
+            코드 한입
+          </a>
+        </h1>
 
         <div class="profile-menu-container" id="profile-menu-container">
           <button
@@ -45,14 +52,35 @@
         <div class="post-detail-container">
           <article class="post-detail" id="post-detail" hidden>
             <header class="post-detail-header">
-              <h2 class="post-detail-title" id="post-title"></h2>
+              <div class="post-side-statistics" aria-label="게시글 반응">
+                <button type="button" class="statistic-box like-statistic" id="like-button">
+                  <img src="../assets/images/like-button.png" alt="" aria-hidden="true" />
+                  <strong id="post-like-count">0</strong>
+                  <span>좋아요</span>
+                </button>
+              </div>
 
-              <div class="post-detail-meta-row">
-                <div class="post-author-information">
-                  <div class="post-detail-profile" id="post-author-profile"></div>
-                  <strong id="post-author-nickname"></strong>
-                  <time class="post-detail-date" id="post-created-at"></time>
-                  <span class="post-edited-label" id="post-edited-label" hidden>(수정됨)</span>
+              <div class="post-heading-area">
+                <h2 class="post-detail-title" id="post-title"></h2>
+
+                <div class="post-detail-meta-row">
+                  <div class="post-author-information">
+                    <div class="post-detail-profile" id="post-author-profile"></div>
+                    <strong id="post-author-nickname"></strong>
+                    <time class="post-detail-date" id="post-created-at"></time>
+                    <span class="post-edited-label" id="post-edited-label" hidden>(수정됨)</span>
+                  </div>
+
+                  <div class="post-meta-counts" aria-label="게시글 통계">
+                    <span>
+                      조회수
+                      <strong id="post-view-count">0</strong>
+                    </span>
+                    <span>
+                      댓글
+                      <strong id="post-comment-count">0</strong>
+                    </span>
+                  </div>
                 </div>
 
                 <div class="post-action-buttons">
@@ -69,7 +97,7 @@
                 id="gallery-previous-button"
                 aria-label="이전 이미지"
               >
-                &lt;
+                <img src="../assets/images/image-next-button.png" alt="" aria-hidden="true" />
               </button>
               <img class="post-gallery-image" id="post-gallery-image" alt="게시글 첨부 이미지" />
               <button
@@ -78,27 +106,12 @@
                 id="gallery-next-button"
                 aria-label="다음 이미지"
               >
-                &gt;
+                <img src="../assets/images/image-next-button.png" alt="" aria-hidden="true" />
               </button>
               <p class="gallery-indicator" id="gallery-indicator"></p>
             </section>
 
             <p class="post-detail-content" id="post-content"></p>
-
-            <section class="post-statistics" aria-label="게시글 통계">
-              <button type="button" class="statistic-box like-statistic" id="like-button">
-                <strong id="post-like-count">0</strong>
-                <span>좋아요수</span>
-              </button>
-              <div class="statistic-box">
-                <strong id="post-view-count">0</strong>
-                <span>조회수</span>
-              </div>
-              <div class="statistic-box">
-                <strong id="post-comment-count">0</strong>
-                <span>댓글</span>
-              </div>
-            </section>
           </article>
 
           <section class="comment-section" id="comment-section" hidden>
@@ -112,6 +125,9 @@
               ></textarea>
               <p class="comment-helper" id="comment-helper"></p>
               <div class="comment-submit-area">
+                <button type="button" class="comment-cancel-button" id="comment-cancel-button" hidden>
+                  취소
+                </button>
                 <button type="submit" class="comment-submit-button" id="comment-submit-button" disabled>
                   댓글 등록
                 </button>
@@ -141,8 +157,6 @@
       </section>
     </div>
 
-    <script src="../js/common.js"></script>
-    <script src="../js/profile-menu.js"></script>
-    <script src="../js/post.js"></script>
+    <script type="module" src="../js/post.js"></script>
   </body>
 </html>

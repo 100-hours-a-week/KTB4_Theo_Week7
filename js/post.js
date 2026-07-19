@@ -1,5 +1,19 @@
 // 게시글 상세 조회 페이지 js
 
+import "./profile-menu.js";
+import {
+  DEFAULT_PROFILE_IMAGE_URL,
+  formatPostCount,
+  formatPostDate,
+  getDisplayNickname,
+  getPostIdFromUrl,
+  request,
+  resolveImageUrl,
+} from "./common.js";
+
+const COMMENT_MAX_LENGTH = 50;
+const POST_IMAGE_FALLBACK_URL = "../assets/images/image_fallback.png";
+
 // === DOM 요소 ===
 
 const postDetail = document.getElementById("post-detail");
@@ -28,6 +42,7 @@ const postCommentCount = document.getElementById("post-comment-count");
 const commentForm = document.getElementById("comment-form");
 const commentContentInput = document.getElementById("comment-content");
 const commentHelper = document.getElementById("comment-helper");
+const commentCancelButton = document.getElementById("comment-cancel-button");
 const commentSubmitButton = document.getElementById("comment-submit-button");
 const commentList = document.getElementById("comment-list");
 
@@ -49,21 +64,8 @@ let isDeleteSubmitting = false;
 let isCommentCreating = false;
 let isCommentUpdating = false;
 let isLikeSubmitting = false;
-
-
-// === URL의 게시글 ID 확인 ===
-
-function getPostIdFromUrl() {
-  const searchParams = new URLSearchParams(location.search);
-  const postId = Number(searchParams.get("postId"));
-
-  if (!Number.isInteger(postId) || postId <= 0) {
-    return null;
-  }
-
-  return postId;
-}
-
+let currentComments = [];
+let isCurrentPostBlinded = false;
 
 // === 게시글 상세 조회 ===
 
@@ -79,10 +81,6 @@ async function readPostDetail() {
       method: "GET",
     });
 
-    if (result?.message !== "post_read_success") {
-      throw new Error("게시글 상세 응답 형식이 올바르지 않습니다.");
-    }
-
     renderPostDetail(result.data);
   } catch (error) {
     console.log(error);
@@ -97,6 +95,7 @@ async function readPostDetail() {
 
 function renderPostDetail(post) {
   const isBlinded = Boolean(post.blinded);
+  isCurrentPostBlinded = isBlinded;
 
   postTitle.textContent = isBlinded ? "숨김 처리된 게시글입니다." : post.title;
   postContent.textContent = isBlinded ? "숨김 처리된 게시글입니다." : post.content;
@@ -122,26 +121,37 @@ function renderPostDetail(post) {
   postCommentCount.textContent = formatPostCount(post.commentCount);
   likeButton.classList.toggle("liked", Boolean(post.liked));
   likeButton.setAttribute("aria-pressed", String(Boolean(post.liked)));
+  likeButton.hidden = isBlinded;
+  likeButton.disabled = isBlinded;
+  commentForm.hidden = isBlinded;
+
+  currentComments = isBlinded || !Array.isArray(post.comments) ? [] : post.comments;
 
   renderPostImages(isBlinded ? [] : post.imageUrls);
-  renderCommentList(post.comments);
+  renderCommentList(currentComments);
 
   postDetail.hidden = false;
-  commentSection.hidden = false;
+  commentSection.hidden = isBlinded;
 }
+
+// === 프로필 이미지 표시 ===
 
 function renderProfileImage(container, imageUrl) {
   container.replaceChildren();
 
-  if (!imageUrl) {
-    return;
+  const image = document.createElement("img");
+  image.alt = "";
+
+  if (imageUrl) {
+    image.src = resolveImageUrl(imageUrl);
+  } else {
+    image.src = DEFAULT_PROFILE_IMAGE_URL;
+    image.classList.add("default-profile-image");
   }
 
-  const image = document.createElement("img");
-  image.src = resolveImageUrl(imageUrl);
-  image.alt = "";
   image.addEventListener("error", function () {
-    image.remove();
+    image.src = DEFAULT_PROFILE_IMAGE_URL;
+    image.classList.add("default-profile-image");
   });
   container.appendChild(image);
 }
@@ -278,8 +288,8 @@ function validateCommentContent() {
     return false;
   }
 
-  if (content.length > 50) {
-    commentHelper.textContent = "* 댓글은 최대 50자까지 작성 가능합니다.";
+  if (content.length > COMMENT_MAX_LENGTH) {
+    commentHelper.textContent = `* 댓글은 최대 ${COMMENT_MAX_LENGTH}자까지 작성 가능합니다.`;
     return false;
   }
 
@@ -292,13 +302,21 @@ function updateCommentSubmitButton() { // 댓글 등록/수정 버튼 활성화 
   const isCommentSubmitting = isCommentCreating || isCommentUpdating;
   const isActive = isValid && !isCommentSubmitting;
   commentSubmitButton.disabled = !isActive;
+  commentCancelButton.hidden = editingCommentId === null;
+  commentCancelButton.disabled = isCommentSubmitting;
 }
 
-function startCommentEdit(commentCard) { // 댓글 수정모드로 전환
-  editingCommentId = Number(commentCard.dataset.commentId);
-  const content = commentCard.querySelector(".comment-content").textContent;
+function startCommentEdit(commentId) { // 댓글 수정모드로 전환
+  const comment = currentComments.find(function (comment) {
+    return comment.commentId === commentId;
+  });
 
-  commentContentInput.value = content;
+  if (!comment) {
+    return;
+  }
+
+  editingCommentId = commentId;
+  commentContentInput.value = comment.commentContent;
   commentSubmitButton.textContent = "댓글 수정";
   commentHelper.textContent = "";
   updateCommentSubmitButton();
@@ -313,6 +331,8 @@ function resetCommentForm() { // 댓글 입력 폼을 초기 상태로 되돌리
   commentHelper.textContent = "";
   updateCommentSubmitButton();
 }
+
+// === 댓글 수정 ===
 
 async function updateComment() {
   if (isCommentUpdating || !validateCommentContent()) {
@@ -333,10 +353,6 @@ async function updateComment() {
       }
     );
 
-    if (result?.message !== "comment_update_success") {
-      throw new Error("댓글 수정 응답 형식이 올바르지 않습니다.");
-    }
-
     resetCommentForm();
     await readPostDetail();
   } catch (error) {
@@ -347,6 +363,8 @@ async function updateComment() {
     updateCommentSubmitButton();
   }
 }
+
+// === 댓글 등록 ===
 
 async function createComment() {
   if (isCommentCreating || !validateCommentContent()) {
@@ -363,10 +381,6 @@ async function createComment() {
         content: commentContentInput.value.trim(),
       }),
     });
-
-    if (result?.message !== "comment_create_success") {
-      throw new Error("댓글 등록 응답 형식이 올바르지 않습니다.");
-    }
 
     resetCommentForm();
     await readPostDetail();
@@ -436,10 +450,6 @@ async function deletePost() {
       method: "DELETE",
     });
 
-    if (result?.message !== "post_delete_success") {
-      throw new Error("게시글 삭제 응답 형식이 올바르지 않습니다.");
-    }
-
     location.href = "./posts.html";
   } catch (error) {
     console.log(error);
@@ -448,16 +458,14 @@ async function deletePost() {
   }
 }
 
+// === 댓글 삭제 ===
+
 async function deleteComment(commentId) {
   try {
     const result = await request(
       `/posts/${currentPostId}/comments/${commentId}`,
       { method: "DELETE" }
     );
-
-    if (result?.message !== "comment_delete_success") {
-      throw new Error("댓글 삭제 응답 형식이 올바르지 않습니다.");
-    }
 
     closeDeleteModalAfterError();
     await readPostDetail();
@@ -485,13 +493,19 @@ function handleCommentListClick(event) {
 
   const commentCard = actionButton.closest(".comment-card");
 
+  if (!commentCard) {
+    return;
+  }
+
+  const commentId = Number(commentCard.dataset.commentId);
+
   if (actionButton.dataset.action === "edit-comment") {
-    startCommentEdit(commentCard);
+    startCommentEdit(commentId);
     return;
   }
 
   if (actionButton.dataset.action === "delete-comment") {
-    openDeleteModal("comment", Number(commentCard.dataset.commentId));
+    openDeleteModal("comment", commentId);
   }
 }
 
@@ -507,8 +521,9 @@ function handlePageKeydown(event) {
   }
 }
 
+// === 좋아요 처리 ===
 async function handleLikeClick() {
-  if (isLikeSubmitting) {
+  if (isCurrentPostBlinded || isLikeSubmitting) {
     return;
   }
 
@@ -519,10 +534,6 @@ async function handleLikeClick() {
     const result = await request(`/posts/${currentPostId}/likes`, {
       method: "POST",
     });
-
-    if (result?.message !== "post_like_success") {
-      throw new Error("좋아요 응답 형식이 올바르지 않습니다.");
-    }
 
     const liked = Boolean(result.data.liked);
     likeButton.classList.toggle("liked", liked);
@@ -646,35 +657,22 @@ function handleLikeError(error) {
   alert("좋아요 처리 중 오류가 발생했습니다.");
 }
 
-
-// === 데이터 표시 형식 변환 ===
-
-function formatPostDate(createdAt) {
-  if (!createdAt) {
-    return "";
+// === 이미지 로딩 오류 처리 ===
+function handleGalleryImageError() {
+  if (postGalleryImage.src.endsWith("/assets/images/image_fallback.png")) {
+    // 이미 fallback 이미지 자체도 로딩 실패 시 무한 루프 방지
+    postGalleryImage.removeAttribute("src");
+    postImageGallery.hidden = true;
+    return;
   }
 
-  return createdAt.replace("T", " ").split(".")[0];
+  postGalleryImage.src = POST_IMAGE_FALLBACK_URL;
 }
-
-function formatPostCount(count) {
-  const safeCount = Number(count) || 0;
-
-  if (safeCount >= 1000) {
-    return `${Math.floor(safeCount / 1000)}k`;
-  }
-
-  return String(safeCount);
-}
-
-function getDisplayNickname(nickname, authorDeleted) {
-  return authorDeleted ? "알 수 없음" : nickname || "";
-}
-
 
 // === 이벤트 등록 및 페이지 초기화 ===
 
 function bindPostDetailEvents() {
+  postGalleryImage.addEventListener("error", handleGalleryImageError);
   galleryPreviousButton.addEventListener("click", showPreviousImage);
   galleryNextButton.addEventListener("click", showNextImage);
   postDeleteButton.addEventListener("click", function () {
@@ -688,6 +686,7 @@ function bindPostDetailEvents() {
       validateCommentContent();
     }
   });
+  commentCancelButton.addEventListener("click", resetCommentForm);
   commentForm.addEventListener("submit", handleCommentFormSubmit);
   commentList.addEventListener("click", handleCommentListClick);
 

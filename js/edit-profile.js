@@ -1,5 +1,11 @@
 // 회원정보 수정 페이지 js
 
+import "./profile-menu.js";
+import { request, resolveImageUrl } from "./common.js";
+import { NICKNAME_MAX_LENGTH } from "./validation.js";
+
+const EDIT_PROFILE_TOAST_DURATION_MS = 2000;
+
 // === DOM 요소 ===
 
 const editProfileForm = document.getElementById("edit-profile-form");
@@ -41,10 +47,6 @@ async function readCurrentUser() {
     const result = await request("/users/me", {
       method: "GET",
     });
-
-    if (result?.message !== "get_user_success") {
-      throw new Error("현재 사용자 응답 형식이 올바르지 않습니다.");
-    }
 
     fillEditProfileForm(result.data);
   } catch (error) {
@@ -121,8 +123,8 @@ function validateNickname() {
     return false;
   }
 
-  if (nickname.length > 10) {
-    nicknameHelper.textContent = "* 닉네임은 최대 10자까지 작성 가능합니다.";
+  if (nickname.length > NICKNAME_MAX_LENGTH) {
+    nicknameHelper.textContent = `* 닉네임은 최대 ${NICKNAME_MAX_LENGTH}자까지 작성 가능합니다.`;
     return false;
   }
 
@@ -131,7 +133,11 @@ function validateNickname() {
 }
 
 function isValidNickname(nickname) {
-  return nickname.length > 0 && !nickname.includes(" ") && nickname.length <= 10;
+  return (
+    nickname.length > 0 &&
+    !nickname.includes(" ") &&
+    nickname.length <= NICKNAME_MAX_LENGTH
+  );
 }
 
 
@@ -166,10 +172,6 @@ async function updateCurrentUser() {
       method: "PATCH",
       body: JSON.stringify(requestBody),
     });
-
-    if (result?.message !== "user_update_success") {
-      throw new Error("회원정보 수정 응답 형식이 올바르지 않습니다.");
-    }
 
     applyUpdatedUser(result.data);
     showEditProfileToast();
@@ -233,7 +235,7 @@ function handleUpdateCurrentUserError(error) {
   }
 
   if (status === 400 && message === "invalid_nickname_format") {
-    nicknameHelper.textContent = "* 닉네임은 띄어쓰기 없이 최대 10자까지 작성 가능합니다.";
+    nicknameHelper.textContent = `* 닉네임은 띄어쓰기 없이 최대 ${NICKNAME_MAX_LENGTH}자까지 작성 가능합니다.`;
     return;
   }
 
@@ -287,13 +289,9 @@ async function handleWithdrawalConfirm() {
   withdrawalConfirmButton.disabled = true;
 
   try {
-    const result = await request("/users/me", {
+    await request("/users/me", {
       method: "DELETE",
     });
-
-    if (result?.message !== "user_delete_success") {
-      throw new Error("회원 탈퇴 응답 형식이 올바르지 않습니다.");
-    }
 
     location.href = "./login.html";
   } catch (error) {
@@ -347,7 +345,7 @@ function showEditProfileToast() {
   editProfileToast.hidden = false;
   toastTimer = setTimeout(function () {
     editProfileToast.hidden = true;
-  }, 2000);
+  }, EDIT_PROFILE_TOAST_DURATION_MS);
 }
 
 

@@ -1,5 +1,14 @@
 // 게시글 작성 페이지 js
 
+import "./profile-menu.js";
+import { request } from "./common.js";
+import {
+  isPostFormValid,
+  POST_TITLE_MAX_LENGTH,
+  validatePostContentInput,
+  validatePostTitleInput,
+} from "./validation.js";
+
 // === DOM 요소 ===
 
 const makePostForm = document.getElementById("make-post-form");
@@ -18,46 +27,6 @@ const makePostSubmitButton = document.getElementById("make-post-submit-button");
 let selectedPostImageFiles = [];
 let postImagePreviewUrls = [];
 let isPostCreating = false;
-
-
-// === 제목 검증 ===
-
-function validatePostTitle() {
-  const title = titleInput.value.trim();
-
-  if (!title) {
-    titleHelper.textContent = "* 제목을 입력해주세요.";
-    return false;
-  }
-
-  if (title.length > 26) {
-    titleHelper.textContent = "* 제목은 최대 26자까지 작성 가능합니다.";
-    return false;
-  }
-
-  titleHelper.textContent = "";
-  return true;
-}
-
-function isValidPostTitle(title) {
-  return title.length > 0 && title.length <= 26;
-}
-
-
-// === 내용 검증 ===
-
-function validatePostContent() {
-  const content = contentInput.value.trim();
-
-  if (!content) {
-    contentHelper.textContent = "* 내용을 입력해주세요.";
-    return false;
-  }
-
-  contentHelper.textContent = "";
-  return true;
-}
-
 
 // === 이미지 선택 및 미리보기 ===
 
@@ -104,10 +73,7 @@ function clearPostImagePreviews() {
 // === 작성 버튼 활성화 ===
 
 function isMakePostFormValid() {
-  const title = titleInput.value.trim();
-  const content = contentInput.value.trim();
-
-  return isValidPostTitle(title) && content.length > 0;
+  return isPostFormValid(titleInput, contentInput);
 }
 
 function updateMakePostSubmitButton() {
@@ -139,12 +105,7 @@ async function createPost() {
       body: JSON.stringify(requestBody),
     });
 
-    if (result?.message !== "post_create_success") {
-      throw new Error("게시글 작성 응답 형식이 올바르지 않습니다.");
-    }
-
-    // 명세 문서와 실제 응답의 두 가지 data 형식을 모두 처리
-    const postId = result.data?.postId ?? result.data;
+    const postId = result.data?.postId;
 
     if (postId) {
       location.href = `./post.html?postId=${postId}`;
@@ -168,7 +129,9 @@ function handleMakePostSubmit(event) {
     return;
   }
 
-  const isValid = validatePostTitle() && validatePostContent();
+  const isValid =
+    validatePostTitleInput(titleInput, titleHelper) &&
+    validatePostContentInput(contentInput, contentHelper);
   updateMakePostSubmitButton();
 
   if (!isValid) {
@@ -198,7 +161,7 @@ function handleCreatePostError(error) {
   }
 
   if (status === 400 && message === "invalid_post_title") {
-    titleHelper.textContent = "* 제목은 최대 26자까지 작성 가능합니다.";
+    titleHelper.textContent = `* 제목은 최대 ${POST_TITLE_MAX_LENGTH}자까지 작성 가능합니다.`;
     return;
   }
 
@@ -231,9 +194,13 @@ function clearCreatePostErrorMessages() {
 
 function bindMakePostEvents() {
   titleInput.addEventListener("input", updateMakePostSubmitButton);
-  titleInput.addEventListener("blur", validatePostTitle);
+  titleInput.addEventListener("blur", function () {
+    validatePostTitleInput(titleInput, titleHelper);
+  });
   contentInput.addEventListener("input", updateMakePostSubmitButton);
-  contentInput.addEventListener("blur", validatePostContent);
+  contentInput.addEventListener("blur", function () {
+    validatePostContentInput(contentInput, contentHelper);
+  });
   postImagesInput.addEventListener("change", handlePostImagesChange);
   makePostForm.addEventListener("submit", handleMakePostSubmit);
   window.addEventListener("beforeunload", clearPostImagePreviews);

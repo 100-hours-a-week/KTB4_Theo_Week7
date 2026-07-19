@@ -7,15 +7,22 @@
   <link rel="stylesheet" href="../css/common.css" />
   <link rel="stylesheet" href="../css/login.css" />
 </head>
-<body>
-  <div class="page">
-    <header class="header">
-      <h1>아무 말 대잔치</h1>
-    </header>
+<body class="auth-page">
+  <main class="auth-main login-main">
+    <section class="auth-shell" aria-labelledby="login-title">
+      <div class="auth-brand">
+        <p class="auth-logo" aria-label="코드 한입">
+          <span aria-hidden="true">&lt;/&gt;</span>
+          코드 한입
+        </p>
+        <p class="auth-tagline">개발자의 성장 한입, 지식의 공유 한입</p>
+      </div>
 
-    <main class="main login-main">
-      <section class="form-container">
-        <h2 class="page-title">로그인</h2>
+      <section class="auth-card form-container">
+        <h1 class="auth-title" id="login-title">로그인</h1>
+        <p class="auth-description">
+          이메일로 로그인하고 오늘의 개발 이야기를 이어가세요.
+        </p>
 
         <form id="login-form">
           <div class="form-group">
@@ -47,12 +54,13 @@
           </button>
         </form>
 
-        <a href="./signup.html" class="text-link">회원가입</a>
+        <div class="auth-switch">
+          아직 회원이 아니신가요?
+          <a href="./signup.html" class="text-link">회원가입</a>
+        </div>
       </section>
-    </main>
-  </div>
-  <script src="../js/common.js"></script>
-  <script src="../js/validation.js"></script>
-  <script src="../js/login.js"></script>
+    </section>
+  </main>
+  <script type="module" src="../js/login.js"></script>
 </body>
 </html>
