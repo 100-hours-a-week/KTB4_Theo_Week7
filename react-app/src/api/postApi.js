@@ -81,3 +81,27 @@ export async function deleteComment(postId, commentId) {
     method: 'DELETE',
   })
 }
+
+export async function createReply(postId, commentId, content) {
+  await request(`/posts/${postId}/comments/${commentId}/replies`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+}
+
+export async function updateReply(postId, commentId, replyId, content) {
+  await request(
+    `/posts/${postId}/comments/${commentId}/replies/${replyId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ content }),
+    },
+  )
+}
+
+export async function deleteReply(postId, commentId, replyId) {
+  await request(
+    `/posts/${postId}/comments/${commentId}/replies/${replyId}`,
+    { method: 'DELETE' },
+  )
+}

@@ -3,8 +3,10 @@ import {
   formatPostDate,
   getPostNickname,
 } from '../../utils/postFormatters.js'
+import ReplyCard from './ReplyCard.jsx'
+import ReplyForm from './ReplyForm.jsx'
 
-function CommentCard({ comment, onEdit, onDelete }) {
+function CommentCard({ comment, replyTarget, editingReply, isReplySubmitting, onEdit, onDelete, onReplyOpen, onReplyCancel, onReplyCreate, onReplyEdit, onReplyEditCancel, onReplyUpdate, onReplyDelete }) {
   const canModify =
     comment.author && !comment.commentDeleted && !comment.authorDeleted
 
@@ -39,6 +41,9 @@ function CommentCard({ comment, onEdit, onDelete }) {
             </button>
           </div>
         )}
+        {!comment.commentDeleted && (
+          <button type="button" className="reply-open-button" onClick={onReplyOpen}>답글</button>
+        )}
       </div>
 
       <p className="comment-content">
@@ -46,6 +51,25 @@ function CommentCard({ comment, onEdit, onDelete }) {
           ? '삭제된 댓글입니다.'
           : comment.commentContent}
       </p>
+      {replyTarget && (
+        <ReplyForm isSubmitting={isReplySubmitting} onSubmit={onReplyCreate} onCancel={onReplyCancel} />
+      )}
+      {Array.isArray(comment.replies) && comment.replies.length > 0 && (
+        <div className="reply-list">
+          {comment.replies.map((reply) => (
+            <ReplyCard
+              key={reply.replyId}
+              reply={reply}
+              isEditing={editingReply?.replyId === reply.replyId}
+              isSubmitting={isReplySubmitting}
+              onEdit={() => onReplyEdit(reply.replyId)}
+              onEditCancel={onReplyEditCancel}
+              onUpdate={(content) => onReplyUpdate(reply.replyId, content)}
+              onDelete={() => onReplyDelete(reply.replyId)}
+            />
+          ))}
+        </div>
+      )}
     </article>
   )
 }

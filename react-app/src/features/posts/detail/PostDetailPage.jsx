@@ -2,11 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import {
   createComment,
+  createReply,
   deleteComment,
   deletePost,
+  deleteReply,
   getPost,
   togglePostLike,
   updateComment,
+  updateReply,
 } from '../../../api/postApi.js'
 import AppLayout from '../../../components/layout/AppLayout.jsx'
 import ConfirmModal from '../../../components/feedback/ConfirmModal.jsx'
@@ -44,6 +47,9 @@ function PostDetailPage() {
   const [editingCommentTarget, setEditingCommentTarget] = useState(null)
   const [isCommentCreating, setIsCommentCreating] = useState(false)
   const [isCommentUpdating, setIsCommentUpdating] = useState(false)
+  const [replyTarget, setReplyTarget] = useState(null)
+  const [editingReplyTarget, setEditingReplyTarget] = useState(null)
+  const [isReplySubmitting, setIsReplySubmitting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false)
   const requestPromisesRef = useRef(new Map())
@@ -51,6 +57,7 @@ function PostDetailPage() {
   const likePromiseRef = useRef(null)
   const commentPromiseRef = useRef(null)
   const deletePromiseRef = useRef(null)
+  const replyPromiseRef = useRef(null)
   const isMountedRef = useRef(false)
 
   const handlePostDetailError = useCallback(
@@ -353,6 +360,72 @@ function PostDetailPage() {
     setEditingCommentTarget(null)
   }, [])
 
+  const handleReplyOpen = useCallback((commentId) => {
+    setEditingReplyTarget(null)
+    setReplyTarget((current) =>
+      current?.commentId === commentId ? null : { postId, commentId },
+    )
+  }, [postId])
+
+  const handleReplyCancel = useCallback(() => setReplyTarget(null), [])
+
+  const submitReply = useCallback((action, commentId, content, replyId = null) => {
+    if (replyPromiseRef.current || postId === null) return replyPromiseRef.current
+
+    setIsReplySubmitting(true)
+    const mutation = action === '등록'
+      ? createReply(postId, commentId, content)
+      : updateReply(postId, commentId, replyId, content)
+
+    const promise = mutation
+      .then(async () => {
+        if (isMountedRef.current) {
+          setReplyTarget(null)
+          setEditingReplyTarget(null)
+        }
+        await refreshPostDetail()
+      })
+      .catch((error) => {
+        if (isMountedRef.current) {
+          console.error(error)
+          handleCommentError(error, `대댓글 ${action}`)
+        }
+        throw error
+      })
+      .finally(() => {
+        replyPromiseRef.current = null
+        if (isMountedRef.current) setIsReplySubmitting(false)
+      })
+
+    replyPromiseRef.current = promise
+    return promise
+  }, [handleCommentError, postId, refreshPostDetail])
+
+  const handleReplyCreate = useCallback(
+    (commentId, content) => submitReply('등록', commentId, content),
+    [submitReply],
+  )
+
+  const handleReplyUpdate = useCallback(
+    (commentId, replyId, content) => submitReply('수정', commentId, content, replyId),
+    [submitReply],
+  )
+
+  const handleReplyEditStart = useCallback((commentId, replyId) => {
+    const comment = loadedPost?.post?.comments?.find((item) => item.commentId === commentId)
+    const reply = comment?.replies?.find((item) => item.replyId === replyId)
+    if (reply) {
+      setReplyTarget(null)
+      setEditingReplyTarget({ postId, commentId, reply })
+    }
+  }, [loadedPost, postId])
+
+  const handleReplyEditCancel = useCallback(() => setEditingReplyTarget(null), [])
+
+  const handleReplyDeleteRequest = useCallback((commentId, replyId) => {
+    if (postId !== null) setDeleteTarget({ type: 'reply', postId, commentId, replyId })
+  }, [postId])
+
   const handlePostDeleteRequest = useCallback(() => {
     if (postId !== null) {
       setDeleteTarget({ type: 'post', postId })
@@ -385,10 +458,14 @@ function PostDetailPage() {
 
     setIsDeleteSubmitting(true)
 
-    const mutationPromise =
-      deleteTarget.type === 'post'
-        ? deletePost(deleteTarget.postId)
-        : deleteComment(deleteTarget.postId, deleteTarget.commentId)
+    let mutationPromise
+    if (deleteTarget.type === 'post') {
+      mutationPromise = deletePost(deleteTarget.postId)
+    } else if (deleteTarget.type === 'reply') {
+      mutationPromise = deleteReply(deleteTarget.postId, deleteTarget.commentId, deleteTarget.replyId)
+    } else {
+      mutationPromise = deleteComment(deleteTarget.postId, deleteTarget.commentId)
+    }
 
     const requestPromise = mutationPromise
       .then(async () => {
@@ -410,7 +487,7 @@ function PostDetailPage() {
           if (deleteTarget.type === 'post') {
             handlePostDeleteError(error)
           } else {
-            handleCommentError(error, '삭제')
+            handleCommentError(error, deleteTarget.type === 'reply' ? '대댓글 삭제' : '삭제')
           }
         }
       })
@@ -515,6 +592,16 @@ function PostDetailPage() {
                 onEditStart={handleCommentEditStart}
                 onEditCancel={handleCommentEditCancel}
                 onDelete={handleCommentDeleteRequest}
+                replyTarget={replyTarget?.postId === postId ? replyTarget : null}
+                editingReply={editingReplyTarget?.postId === postId ? editingReplyTarget : null}
+                isReplySubmitting={isReplySubmitting}
+                onReplyOpen={handleReplyOpen}
+                onReplyCancel={handleReplyCancel}
+                onReplyCreate={handleReplyCreate}
+                onReplyEdit={handleReplyEditStart}
+                onReplyEditCancel={handleReplyEditCancel}
+                onReplyUpdate={handleReplyUpdate}
+                onReplyDelete={handleReplyDeleteRequest}
               />
             )}
           </>
@@ -525,7 +612,9 @@ function PostDetailPage() {
         title={
           deleteTarget?.type === 'post'
             ? '게시글을 삭제하시겠습니까?'
-            : '댓글을 삭제하시겠습니까?'
+            : deleteTarget?.type === 'reply'
+              ? '대댓글을 삭제하시겠습니까?'
+              : '댓글을 삭제하시겠습니까?'
         }
         description="삭제한 내용은 복구할 수 없습니다."
         isSubmitting={isDeleteSubmitting}

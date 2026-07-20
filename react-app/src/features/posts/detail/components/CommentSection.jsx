@@ -10,6 +10,16 @@ function CommentSection({
   onEditStart,
   onEditCancel,
   onDelete,
+  replyTarget,
+  editingReply,
+  isReplySubmitting,
+  onReplyOpen,
+  onReplyCancel,
+  onReplyCreate,
+  onReplyEdit,
+  onReplyEditCancel,
+  onReplyUpdate,
+  onReplyDelete,
 }) {
   const isEditing = Boolean(editingComment)
 
@@ -35,6 +45,16 @@ function CommentSection({
         comments={comments}
         onEdit={onEditStart}
         onDelete={onDelete}
+        replyTarget={replyTarget}
+        editingReply={editingReply}
+        isReplySubmitting={isReplySubmitting}
+        onReplyOpen={onReplyOpen}
+        onReplyCancel={onReplyCancel}
+        onReplyCreate={onReplyCreate}
+        onReplyEdit={onReplyEdit}
+        onReplyEditCancel={onReplyEditCancel}
+        onReplyUpdate={onReplyUpdate}
+        onReplyDelete={onReplyDelete}
       />
     </section>
   )
