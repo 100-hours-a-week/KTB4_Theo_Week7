@@ -15,10 +15,13 @@
 
 | Status | message | UI 동작 | 이동 |
 |---:|---|---|---|
-| 401 | `unauthorized_request` | `로그인이 필요합니다.` alert, form 숨김 | `/login` |
-| 기타·500·네트워크 오류 | 기타 | `회원정보를 불러오는 중 오류가 발생했습니다.` alert, form 숨김 | 없음 |
+| 조회 중 | 해당 없음 | 코드 한입 테마 로딩 문구와 CSS spinner, form 숨김 | 없음 |
+| 401 | `unauthorized_request` | 인증 상태 제거, form 숨김 | `/login` |
+| 기타·500·네트워크 오류 | 기타 | 공통 오류 문구와 `다시 시도하기` 버튼, form 숨김 | 없음 |
+| 비401 오류 후 재시도 중 | 기타 | 오류 카드 유지, 버튼 비활성화와 `다시 불러오는 중...` 표시 | 없음 |
+| 비401 오류 후 재시도 성공 | 해당 없음 | 오류 카드를 닫고 사용자 값이 채워진 form 표시 | 없음 |
 
-Vanilla GET 오류는 500 전용 문구를 구분하지 않는다.
+Vanilla GET 오류는 500 전용 문구를 구분하지 않는다. React도 비401 오류 문구를 세분화하지 않지만 alert 대신 복구 가능한 공통 오류 화면을 제공한다. Access Token은 유지하되 `user`가 없는 Outlet은 렌더링하지 않는다.
 
 ## 3. PATCH `/users/me` 오류
 
@@ -53,4 +56,3 @@ Vanilla GET 오류는 500 전용 문구를 구분하지 않는다.
 - 파일 형식·크기·용량: 별도 프론트 검증 없음
 - Object URL 생성 실패: 별도 처리 없음
 - unmount: Object URL과 toast timer를 반드시 cleanup
-

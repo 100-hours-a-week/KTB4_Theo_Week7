@@ -275,3 +275,6 @@ route /posts
 | 2026-07-19 | `/posts` 연결 시 `PostListPage` 화면 shell을 함께 생성 | 보호 Route의 Outlet 대상이 필요하며 임시 placeholder 대신 기존 DOM 구조를 다음 목록 구현 기반으로 사용하기 위함 | Header, 피드 제목, 작성 링크, 빈 목록과 sentinel만 먼저 렌더링하며 목록 API는 아직 호출하지 않음 |
 | 2026-07-19 | 별도 `InfiniteScrollSentinel` 컴포넌트 대신 `useInfiniteScroll` Hook으로 구현 | sentinel 마크업은 페이지에 한 줄뿐이고 재사용할 핵심은 IntersectionObserver 생명주기이기 때문 | 페이지가 sentinel ref를 연결하고 Hook이 observer 생성·해제를 담당 |
 | 2026-07-19 | Hook에 `refreshKey`를 추가하고 로딩 상태는 ref로 판정 | 실패 후 로딩 해제만으로 observer를 재생성하면 화면에 보이는 sentinel이 같은 실패 요청을 즉시 반복할 수 있음 | 게시글이 실제 추가된 성공 시점에만 관찰을 갱신하며 요청 중 교차는 무시 |
+| 2026-07-23 | Access Token이 남은 사용자 조회 실패에서 Outlet을 허용하던 정책을 폐기 | `user`가 없는 상태로 회원정보 수정 등 사용자 의존 화면이 렌더링되어 빈 본문이 노출됨 | 2026-07-19의 비인증 오류 Outlet 허용 결정을 대체하며, 비401 실패에는 공통 오류·재시도 화면을 렌더링 |
+| 2026-07-23 | `ProtectedRoute` 인증 초기화 중 `LoadingView` 렌더링 | 로그인 직후와 보호 URL 직접 진입 시 `/users/me` 응답 전까지 흰 화면이 노출됨 | 사용자 조회가 끝날 때까지 코드 한입 테마의 로딩 문구와 CSS spinner를 표시하고 Outlet은 숨김 |
+| 2026-07-23 | 인증 초기화 실패 재시도 상태를 Route에서 관리 | 500·네트워크 오류는 로그아웃 사유가 아니지만 사용자가 복구할 경로가 필요함 | 재시도 중 버튼을 비활성화하고 성공하면 Outlet, 401 또는 토큰 제거 시 로그인, 그 외 실패면 오류 화면 유지 |

@@ -276,6 +276,8 @@ request error → 서버 message를 필드 오류 또는 alert로 변환
 | validation 순수 함수 | 여러 폼에 동일 규칙 반복 | 공통 기반 이전 |
 | `AuthContext` | 토큰·현재 사용자·로그아웃 공유 | 공통 기반 이전 |
 | `ProtectedRoute` | 보호 페이지 공통 접근 제어 | 공통 기반 이전 |
+| `LoadingView` | 보호 Route 인증 초기화 중 빈 화면 방지 | 인증 초기화 UX 보완 |
+| `AuthInitializationError` | 비401 사용자 조회 실패 안내와 재시도 제공 | 인증 초기화 UX 보완 |
 | `AppLayout` | 로그인 이후 6개 페이지 공통 틀 | 공통 기반 이전 |
 | `Header` | 로그인 이후 6개 페이지에서 반복 | 공통 기반 이전 |
 | `ProfileMenu` | 동일 마크업과 동작 반복 | 공통 기반 이전 |
@@ -313,6 +315,8 @@ App
 │       └── SignupPage
 │
 └── ProtectedRoute
+    ├── LoadingView
+    ├── AuthInitializationError
     └── AppLayout
         ├── Header
         │   └── ProfileMenu
@@ -321,6 +325,8 @@ App
 Shared UI
 ├── FormField              후보, 인증 페이지로 먼저 검증
 ├── ConfirmModal           확정
+├── LoadingView            확정, 인증 초기화 전용
+├── AuthInitializationError 확정, 인증 초기화 실패 전용
 ├── Toast                  후보
 └── ImagePreviewList       후보
 ```
@@ -332,3 +338,5 @@ Shared UI
 | 2026-07-19 | 전체 페이지 최초 중복 분석 작성 | React 공통화 경계를 구현 전에 설정하기 위함 | 로그인 컴포넌트 설계 및 공통 기반 이전의 기준으로 사용 |
 | 2026-07-19 | Access Token 모듈 저장소에 구독 API를 추가하고 `AuthContext`가 `useSyncExternalStore`로 사용하도록 변경 | 로그인 외에 자동 재발급·재발급 실패에서도 API client 토큰과 React 인증 상태가 즉시 일치해야 함 | 토큰의 실제 저장 위치는 유지하면서 이중 state 불일치 제거 |
 | 2026-07-19 | 인증 페이지 공통 Header 동작을 `useHeaderControls`로 분리 | 로그인 이후 여섯 페이지에서 프로필 메뉴 상태와 로그아웃 처리 코드가 반복됨 | 페이지는 사용자별 Header props만 전달하고 공통 메뉴·로그아웃 동작을 한 곳에서 관리 |
+| 2026-07-23 | 인증 초기화 전용 `LoadingView`와 `AuthInitializationError`를 공통 feedback 컴포넌트로 추가 | 초기화 지연 시 빈 화면이 보이고 비401 조회 실패 시 `user` 없이 페이지가 렌더링되는 문제를 막기 위함 | `ProtectedRoute`가 초기화 중에는 로딩 화면, 토큰이 남은 실패에는 재시도 화면, 성공 시에만 Outlet을 렌더링 |
+| 2026-07-23 | 두 인증 상태 화면에 로그인 화면의 코드 한입 테마를 재사용 | 보호 화면 진입 전 상태도 서비스의 시각 언어와 일관되어야 함 | 배경·브랜드·민트 포인트를 유지하고 로딩 상태에는 CSS spinner와 `role="status"`, 오류 상태에는 `role="alert"` 적용 |

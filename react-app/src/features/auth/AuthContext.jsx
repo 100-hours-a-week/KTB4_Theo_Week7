@@ -62,7 +62,10 @@ function AuthProvider({ children }) {
         .catch((error) => {
           setUser(null)
 
-          if (error?.status === 401 || !getAccessToken()) {
+          const isUnauthorized = error?.status === 401
+          const hasAccessToken = Boolean(getAccessToken())
+
+          if (isUnauthorized || !hasAccessToken) {
             clearAuth()
           }
 
@@ -72,7 +75,7 @@ function AuthProvider({ children }) {
           setIsAuthInitializing(false)
           initializationPromiseRef.current = null
         })
-    }
+      }
 
     return initializationPromiseRef.current
   }, [clearAuth])

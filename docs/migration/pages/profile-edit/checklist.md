@@ -21,11 +21,13 @@
 |---|---|---|---|---|---|
 | PROFILE-EDIT-001 | 인증 사용자가 `/profile/edit`에 진입한다. | 사용자 값이 채워진 form이 표시된다. | 미실행 | BLOCKED | 실제 테스트 계정으로 시각·상호작용 검증 필요 |
 | PROFILE-EDIT-002 | 비인증 사용자가 진입한다. | 인증 초기화 후 `/login`으로 이동한다. | 미실행 | PASS |  |
-| PROFILE-EDIT-003 | 인증 초기화를 지연한다. | 완료 전 form이 노출되지 않는다. | 미실행 | PASS |  |
+| PROFILE-EDIT-003 | 인증 초기화를 지연한다. | 완료 전 form 대신 코드 한입 테마 `LoadingView`가 표시된다. | 미실행 | PASS | CSS spinner와 로딩 문구 적용 |
 | PROFILE-EDIT-004 | 초기 사용자 값을 표시한다. | email·nickname·profileImage가 일치한다. | 미실행 | PASS |  |
 | PROFILE-EDIT-005 | 초기 상태를 확인한다. | 저장 버튼이 비활성화된다. | 미실행 | PASS |  |
 | PROFILE-EDIT-006 | 로고와 프로필 메뉴를 사용한다. | 목록 이동과 공통 메뉴 동작이 일치한다. | 미실행 | PASS |  |
 | PROFILE-EDIT-007 | 수정에 성공한다. | Header와 Context 사용자도 즉시 갱신된다. | 미실행 | PASS |  |
+| PROFILE-EDIT-008 | 초기 사용자 조회가 500·기타·네트워크 오류로 실패한다. | 로그인 이동이나 빈 Outlet 대신 오류 문구와 재시도 버튼이 표시된다. | 미실행 | PASS | Access Token 유지 |
+| PROFILE-EDIT-009 | 초기 사용자 조회 실패 후 재시도한다. | 요청 중 버튼이 비활성화되고 성공 시 form, 재실패 시 오류 화면이 표시된다. | 미실행 | PASS | 401 재시도 실패 시 `/login` |
 
 ## 프로필 이미지와 이메일
 
