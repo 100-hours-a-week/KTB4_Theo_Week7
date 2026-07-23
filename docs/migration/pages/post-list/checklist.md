@@ -47,7 +47,7 @@
 | POST-LIST-026 | 작성일을 표시한다. | `YYYY.MM.DD` 형식으로 표시한다. | 미실행 | PASS | formatter 실행 결과 확인 |
 | POST-LIST-027 | 탈퇴한 작성자를 표시한다. | 닉네임이 `알 수 없음`으로 표시된다. | 미실행 | PASS | formatter 실행 결과 확인 |
 | POST-LIST-028 | 프로필 경로가 없는 작성자를 표시한다. | 기본 프로필 이미지가 표시된다. | 미실행 | PASS | `ProfileImage` fallback 조건 확인 |
-| POST-LIST-029 | 작성자 이미지 로드가 실패한다. | 기본 프로필 이미지로 교체된다. | 미실행 | PASS | image `onError` 처리 확인 |
+| POST-LIST-029 | 작성자 이미지 로드가 실패한다. | 기본 프로필 이미지로 교체된다. | 미실행 | PASS | 실패 URL state에 따라 fallback `src`와 class를 렌더링하는 처리 확인 |
 | POST-LIST-030 | 게시글 카드를 선택한다. | 해당 `postId`의 상세 Route로 이동한다. | 미실행 | BLOCKED | 카드 Link는 구현됐으나 상세 Route 미구현 |
 | POST-LIST-031 | 빈 목록 영역을 선택한다. | 페이지 이동이 발생하지 않는다. | 미실행 | PASS | 카드 외 영역에 이동 handler 없음 |
 

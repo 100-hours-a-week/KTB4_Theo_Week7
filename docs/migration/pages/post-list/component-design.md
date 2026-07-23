@@ -181,6 +181,8 @@ type ProfileImageProps = {
 
 Header와 PostCard 모두 서버 이미지 URL 변환과 로드 실패 fallback이 필요하므로 이번 단계에서 공통 컴포넌트로 도입할 가치가 있다. 크기와 테두리는 부모 CSS class가 담당한다.
 
+로드에 실패한 원본 URL을 내부 state에 기록하고 `src`와 fallback class를 렌더 결과로 계산한다. 이미지 요소의 `src`나 `classList`를 직접 변경하지 않으며, 다른 `imagePath`가 전달되면 새 URL은 다시 로드를 시도한다.
+
 ## 9. API 경계
 
 `postApi.js`를 추가한다.
@@ -278,3 +280,4 @@ route /posts
 | 2026-07-23 | Access Token이 남은 사용자 조회 실패에서 Outlet을 허용하던 정책을 폐기 | `user`가 없는 상태로 회원정보 수정 등 사용자 의존 화면이 렌더링되어 빈 본문이 노출됨 | 2026-07-19의 비인증 오류 Outlet 허용 결정을 대체하며, 비401 실패에는 공통 오류·재시도 화면을 렌더링 |
 | 2026-07-23 | `ProtectedRoute` 인증 초기화 중 `LoadingView` 렌더링 | 로그인 직후와 보호 URL 직접 진입 시 `/users/me` 응답 전까지 흰 화면이 노출됨 | 사용자 조회가 끝날 때까지 코드 한입 테마의 로딩 문구와 CSS spinner를 표시하고 Outlet은 숨김 |
 | 2026-07-23 | 인증 초기화 실패 재시도 상태를 Route에서 관리 | 500·네트워크 오류는 로그아웃 사유가 아니지만 사용자가 복구할 경로가 필요함 | 재시도 중 버튼을 비활성화하고 성공하면 Outlet, 401 또는 토큰 제거 시 로그인, 그 외 실패면 오류 화면 유지 |
+| 2026-07-23 | `ProfileImage` fallback을 실패 URL state로 관리 | `onError`에서 `src`와 `classList`를 직접 변경하면 React가 관리하는 DOM과 상태가 어긋날 수 있음 | state에 따라 기본 이미지와 class를 선언적으로 렌더링하고 이미지 경로 변경 시 새 URL을 다시 시도 |

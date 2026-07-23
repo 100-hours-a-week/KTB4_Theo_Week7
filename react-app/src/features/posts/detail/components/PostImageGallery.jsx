@@ -6,6 +6,9 @@ import { resolveImageUrl } from '../../../../utils/image.js'
 function PostImageGallery({ imagePaths }) {
   const images = Array.isArray(imagePaths) ? imagePaths.filter(Boolean) : []
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [fallbackImagePaths, setFallbackImagePaths] = useState(
+    () => new Set(),
+  )
   const [isUnavailable, setIsUnavailable] = useState(false)
 
   if (images.length === 0 || isUnavailable) {
@@ -14,6 +17,10 @@ function PostImageGallery({ imagePaths }) {
 
   const imageCount = images.length
   const currentImagePath = images[currentIndex]
+  const shouldUseFallback = fallbackImagePaths.has(currentImagePath)
+  const currentImageSrc = shouldUseFallback
+    ? imageFallback
+    : resolveImageUrl(currentImagePath)
   const hasMultipleImages = imageCount > 1
   const isFirstImage = currentIndex === 0
   const isLastImage = currentIndex === imageCount - 1
@@ -26,17 +33,21 @@ function PostImageGallery({ imagePaths }) {
     setCurrentIndex((index) => Math.min(imageCount - 1, index + 1))
   }
 
-  function handleImageError(event) {
-    const image = event.currentTarget
-
-    if (image.dataset.fallbackApplied === 'true') {
-      image.removeAttribute('src')
+  function handleImageError() {
+    if (shouldUseFallback) {
       setIsUnavailable(true)
       return
     }
 
-    image.dataset.fallbackApplied = 'true'
-    image.src = imageFallback
+    setFallbackImagePaths((currentPaths) => {
+      if (currentPaths.has(currentImagePath)) {
+        return currentPaths
+      }
+
+      const nextPaths = new Set(currentPaths)
+      nextPaths.add(currentImagePath)
+      return nextPaths
+    })
   }
 
   return (
@@ -56,7 +67,7 @@ function PostImageGallery({ imagePaths }) {
       <img
         key={currentImagePath}
         className="post-gallery-image"
-        src={resolveImageUrl(currentImagePath)}
+        src={currentImageSrc}
         alt="게시글 첨부 이미지"
         onError={handleImageError}
       />

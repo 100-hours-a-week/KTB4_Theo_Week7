@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import defaultProfileImage from '../../assets/images/basic-profile-icon.png'
 import { resolveImageUrl } from '../../utils/image.js'
 
@@ -8,7 +9,8 @@ function ProfileImage({
   fallbackSrc = defaultProfileImage,
 }) {
   const imageUrl = resolveImageUrl(imagePath)
-  const isDefaultImage = !imageUrl
+  const [failedImageUrl, setFailedImageUrl] = useState('')
+  const isDefaultImage = !imageUrl || failedImageUrl === imageUrl
   const imageClassName = [
     className,
     isDefaultImage ? 'default-profile-image' : '',
@@ -16,21 +18,18 @@ function ProfileImage({
     .filter(Boolean)
     .join(' ')
 
-  function handleImageError(event) {
-    const image = event.currentTarget
-
-    if (image.src === fallbackSrc) {
+  function handleImageError() {
+    if (isDefaultImage) {
       return
     }
 
-    image.src = fallbackSrc
-    image.classList.add('default-profile-image')
+    setFailedImageUrl(imageUrl)
   }
 
   return (
     <img
       className={imageClassName}
-      src={imageUrl || fallbackSrc}
+      src={isDefaultImage ? fallbackSrc : imageUrl}
       alt={alt}
       onError={handleImageError}
     />

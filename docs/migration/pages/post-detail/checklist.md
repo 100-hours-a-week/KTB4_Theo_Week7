@@ -38,7 +38,7 @@
 | POST-DETAIL-013 | 수정되지 않은 게시글을 표시한다. | `(수정됨)`이 표시되지 않는다. | 미실행 | PASS | `edited` 조건부 렌더링 확인 |
 | POST-DETAIL-014 | 1,000 이상 통계를 표시한다. | 좋아요·조회수·댓글이 `{n}k` 형식이다. | 미실행 | PASS | 목록에서 검증한 `formatPostCount` 재사용 |
 | POST-DETAIL-015 | 탈퇴 작성자의 게시글을 표시한다. | 닉네임이 `알 수 없음`이다. | 미실행 | PASS | `getPostNickname` 조건 확인 |
-| POST-DETAIL-016 | 프로필 이미지가 없거나 로드 실패한다. | 기본 프로필 이미지가 표시된다. | 미실행 | PASS | 공통 `ProfileImage` fallback 확인 |
+| POST-DETAIL-016 | 프로필 이미지가 없거나 로드 실패한다. | 기본 프로필 이미지가 표시된다. | 미실행 | PASS | 공통 `ProfileImage`의 state 기반 fallback 확인 |
 | POST-DETAIL-017 | 내가 작성한 게시글을 표시한다. | 수정·삭제 버튼이 표시된다. | 미실행 | PASS | `author` 조건부 렌더링 확인 |
 | POST-DETAIL-018 | 다른 작성자의 게시글을 표시한다. | 수정·삭제 버튼이 표시되지 않는다. | 미실행 | PASS | `author` 조건부 렌더링 확인 |
 | POST-DETAIL-019 | 수정 링크를 선택한다. | `/posts/{postId}/edit`로 이동한다. | 미실행 | BLOCKED | Link는 구현됐으나 수정 Route 미구현 |
@@ -76,7 +76,7 @@
 | POST-DETAIL-043 | 탈퇴 작성자의 댓글을 표시한다. | 닉네임이 `알 수 없음`이고 수정·삭제 버튼이 없다. | 미실행 | PASS | 닉네임과 `canModify` 조건 확인 |
 | POST-DETAIL-044 | 내가 작성한 일반 댓글을 표시한다. | 수정·삭제 버튼이 표시된다. | 미실행 | PASS | `author` 조건 확인 |
 | POST-DETAIL-045 | 다른 사용자의 댓글을 표시한다. | 수정·삭제 버튼이 표시되지 않는다. | 미실행 | PASS | `author` 조건 확인 |
-| POST-DETAIL-046 | 댓글 프로필 이미지가 실패한다. | 기본 프로필 이미지로 교체된다. | 미실행 | PASS | 공통 `ProfileImage` 재사용 확인 |
+| POST-DETAIL-046 | 댓글 프로필 이미지가 실패한다. | 기본 프로필 이미지로 교체된다. | 미실행 | PASS | 공통 `ProfileImage`의 state 기반 fallback 재사용 확인 |
 
 ## 좋아요
 

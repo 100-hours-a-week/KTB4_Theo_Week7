@@ -56,3 +56,21 @@ Vanilla GET 오류는 500 전용 문구를 구분하지 않는다. React도 비4
 - 파일 형식·크기·용량: 별도 프론트 검증 없음
 - Object URL 생성 실패: 별도 처리 없음
 - unmount: Object URL과 toast timer를 반드시 cleanup
+
+## 6. 실제 백엔드 확인 기록
+
+| 검증 항목 | 기대 status·message | 실제 결과 | 근거 | 결과 |
+|---|---|---|---|---|
+| GET `/users/me` 성공 | 200 `get_user_success` | email·nickname·profileImage 반환 | LIVE-API 2026-07-23 | PASS |
+| PATCH 성공 | 200 `user_update_success` | nickname·profileImage 반환, email 없음 | LIVE-API 2026-07-23 | PASS, 명세 보정 |
+| 빈 닉네임 | 400 `blank_nickname` | 기대와 일치 | LIVE-API 2026-07-23 | PASS |
+| 공백 포함 닉네임 | 400 `invalid_nickname_format` | 기대와 일치 | LIVE-API 2026-07-23 | PASS |
+| 현재 닉네임과 동일 | 409 `same_nickname` | 이미지가 달라도 기대 오류 반환 | LIVE-API·BACKEND-TEST | PASS |
+| 다른 사용자의 닉네임 | 409 `nickname_already_exist` | 기대와 일치 | LIVE-API 2026-07-23 | PASS |
+| 인증 토큰 없음·오류 | 401 계열 | Security filter가 `access_token_required`·`access_token_expired`·`invalid_access_token`을 구분 | BACKEND-CODE | PASS (CODE) |
+| 예상하지 못한 서버 오류 | 500 `internal_server_error` | 전역 예외 처리 계약 확인, 강제 실행 장치 없음 | BACKEND-CODE | PASS (CODE), LIVE 미실행 |
+| DELETE 성공 | 200 `user_delete_success` | 사용자 비식별화와 Refresh Token DB 폐기 | LIVE-API·BACKEND-TEST | PASS |
+| 탈퇴 후 토큰 재발급 | 401 `invalid_refresh_token` | 기대와 일치 | LIVE-API 2026-07-23 | PASS |
+| 탈퇴 응답의 쿠키 만료 | 만료 `Set-Cookie` 필요 여부 확인 | DELETE 응답에 `Set-Cookie` 없음 | LIVE-API·BACKEND-CODE | 확인 완료, 정책 검토 필요 |
+
+실제 500과 네트워크 단절은 정상 백엔드만으로 재현하지 않았다. 프론트의 화면 분기는 모의 응답으로 검증하고, 이 표의 LIVE 결과와 혼합하지 않는다.

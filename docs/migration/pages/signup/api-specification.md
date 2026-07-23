@@ -69,9 +69,23 @@ React 1차 마이그레이션에서는 동작 동등성을 위해 이 계약을 
 
 ## 실제 백엔드 확인 항목
 
-- [ ] 성공 응답 status와 body 확인
-- [ ] `profileImage`에 파일명만 보내는 계약이 백엔드 의도와 일치하는지 확인
-- [ ] 400 message 목록 확인
-- [ ] 이메일·닉네임 중복 시 409 message 확인
-- [ ] 회원가입 요청에도 Refresh Token 쿠키가 불필요한지 확인
+- [x] 성공 응답 status와 body 확인
+  - LIVE-API 2026-07-23: 201 `signup_success`, `data`는 생성된 사용자 ID
+- [x] `profileImage`에 파일명만 보내는 계약이 백엔드 의도와 일치하는지 확인
+  - BACKEND-CODE·LIVE-API: `SignupRequest.profileImage` 문자열을 `User.profileImage` 문자열 컬럼에 그대로 저장
+- [x] 400 message 목록 확인
+  - LIVE-API: `invalid_request`, `invalid_email_format`, `invalid_password_format`, `invalid_nickname_format`
+  - BACKEND-CODE: 비밀번호 확인 불일치는 400 `password_mismatch`
+- [x] 이메일·닉네임 중복 시 409 message 확인
+  - LIVE-API: `email_already_exist`, `nickname_already_exist`
+- [x] 회원가입 요청에도 Refresh Token 쿠키가 불필요한지 확인
+  - BACKEND-CODE·LIVE-API: 회원가입 응답에는 `Set-Cookie`가 없으며 토큰은 로그인에서만 발급
 
+### 검증 환경과 근거
+
+| 항목 | 값 |
+|---|---|
+| 검증일 | 2026-07-23 |
+| BACKEND-TEST | `UserServiceTest` 21건 재실행 성공 |
+| LIVE-API | localhost:8080에 폐기용 계정 생성, 201·400·409 응답 확인 |
+| E2E-REACT | 이미지와 유효한 폼 제출, 성공 alert와 `/login` 이동, 중복 helper 확인 |

@@ -92,7 +92,7 @@ type PostImageGalleryProps = {
 };
 ```
 
-현재 index는 갤러리 내부 state로 관리한다. `imagePaths`가 바뀌면 index를 0으로 되돌리고 범위를 보정한다. navigation과 이미지 오류 fallback을 담당한다.
+현재 index와 원본 이미지별 fallback 적용 여부는 갤러리 내부 state로 관리한다. `imagePaths`가 바뀌면 index를 0으로 되돌리고 범위를 보정한다. 이미지 요소의 `src`나 `dataset`을 직접 변경하지 않고 state에서 렌더링할 `src`를 계산한다. navigation과 이미지 오류 fallback을 담당한다.
 
 ## 5. 댓글 컴포넌트
 
@@ -253,3 +253,4 @@ mutation
 | 2026-07-19 | `ConfirmModal`이 닫힐 때 기존 trigger로 포커스 복원 | Vanilla는 초기 확인 포커스만 제공하지만 닫힌 뒤 키보드 사용자의 위치가 사라짐 | 취소·backdrop·Escape 후 삭제를 연 버튼으로 돌아가는 접근성 개선, focus trap은 아직 추가하지 않음 |
 | 2026-07-19 | 삭제 대상에 `postId`를 함께 저장 | 모달이 열린 상태에서 Route param이 바뀌면 이전 페이지 대상을 삭제할 위험을 차단해야 함 | 현재 Route ID와 대상 ID가 일치할 때만 모달 표시와 삭제 실행 |
 | 2026-07-19 | 삭제 요청도 pending state와 Promise ref를 함께 사용 | 확인 버튼 연속 실행과 요청 중 취소·Escape·backdrop 닫기를 동시에 차단해야 함 | Promise ref가 중복 요청·닫기를 즉시 막고 state가 두 버튼의 disabled UI를 담당 |
+| 2026-07-23 | 갤러리 이미지 fallback을 경로별 state로 관리 | `onError`에서 `dataset`과 `src`를 직접 변경하면 React의 선언적 렌더링과 충돌함 | 원본 실패 시 state로 fallback을 선택하고 fallback도 실패하면 기존처럼 갤러리를 숨김 |
